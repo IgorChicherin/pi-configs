@@ -1,0 +1,9 @@
+{
+  "packages": [
+    "npm:billion-context",
+    "npm:pi-web-search",
+    "git:github.com/DietrichGebert/ponytail",
+    "npm:pi-active-memory",
+    "git:github.com/v2nic/pi-caveman"
+  ]
+}

@@ -1,0 +1,15 @@
+# Only portable configuration belongs in the Stow package.
+/pi/.pi/agent/*
+!/pi/.pi/agent/settings.json
+!/pi/.pi/agent/APPEND_SYSTEM.md
+!/pi/.pi/agent/mcp.json
+!/pi/.pi/agent/active-memory.json
+
+# Credentials and local artifacts, wherever they appear.
+**/auth.json
+**/mcp-auth.json
+.env
+.env.*
+__pycache__/
+.DS_Store
+Thumbs.db
