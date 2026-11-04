@@ -13,6 +13,7 @@ pi/.pi/agent/
   APPEND_SYSTEM.md     # Caveman Ultra instruction
   mcp.json             # Context7 MCP endpoint
   active-memory.json   # OpenRouter embedding provider; environment variable only
+  lsp.json             # Go, basedpyright, C/C++, YAML, JSON servers
 install.sh             # Linux/macOS: Stow + plugin/skill installation
 install.ps1            # Windows: copy + plugin/skill installation
 ```
@@ -27,6 +28,7 @@ Installers reconcile the unpinned `packages` list in `settings.json` using
 | --- | --- | --- |
 | Billion Context | `npm:billion-context` | Not recorded; added to restore configuration |
 | Web search | `npm:pi-web-search` | `1.7.0` |
+| LSP | `npm:pi-lsp` | `0.1.7` |
 | Ponytail | `git:github.com/DietrichGebert/ponytail` | `96608e078b2d5ea607c5c3b8b5a54d1c1fba6846` |
 | Active memory | `npm:pi-active-memory` | `1.9.0` |
 | Caveman | `git:github.com/v2nic/pi-caveman` | `2480692ffabddc3d1efec8eb822e664ff7e0e5ef` |
@@ -76,6 +78,7 @@ The script checks conflicts with Stow's dry run, then runs:
 ```bash
 stow --no-folding --dir="$PWD" --target="$HOME" pi
 pi update --extensions
+npm install --prefix "$HOME/.pi/agent/lsp-servers" --no-save --package-lock=false --ignore-scripts basedpyright yaml-language-server vscode-langservers-extracted
 npx --yes skills add mattpocock/skills --global --agent pi --skill '*' --yes
 ```
 
@@ -94,13 +97,20 @@ This does not uninstall plugins or external skills, or delete runtime data.
 
 ## Windows
 
-From this repository in PowerShell:
+`pi-lsp` 0.1.7 looks for `PI_AGENT_DIR` or `HOME`, not Windows `USERPROFILE`.
+Set its agent directory once, then restart your terminal and Pi so they inherit it:
+
+```powershell
+[Environment]::SetEnvironmentVariable('PI_AGENT_DIR', (Join-Path $HOME '.pi/agent'), 'User')
+```
+
+From this repository in the new PowerShell terminal:
 
 ```powershell
 .\install.ps1
 ```
 
-The script checks all four destination files before copying them to
+The script checks LSP config discovery and all five destination files before copying them to
 `$HOME\.pi\agent`, then installs the plugins and external skills. No administrator access or Stow is
 needed. If local execution policy blocks the script, review it first, then run:
 
@@ -120,8 +130,10 @@ retry plugin installation alone, run `pi update --extensions`.
 
 1. Start `pi` and use `/login` to authenticate separately.
 2. For memory embeddings, set `OPENROUTER_API_KEY` outside this repository. The
-   configured model is `liquid/lfm-2.5-embedding-350m:free`; availability depends on
-   OpenRouter. Memory contents are not restored.
+   configured model is `perplexity/pplx-embed-v1-0.6b`; this is a paid OpenRouter
+   embedding model and requires account credit. Memory contents are not restored.
+   Existing installations switching models must approve re-embedding at Pi startup;
+   declining or a failed migration disables Active Memory for that session.
 3. Configure web-search provider credentials separately if required by your
    chosen provider. Context7 uses its public MCP URL; no token is included.
 4. Use `pi list` to inspect configured plugins.
@@ -132,12 +144,69 @@ If external skill installation fails, retry the `npx` command above. Existing
 configs and plugins remain installed. No automatic rollback or synchronization
 is performed.
 
+## Language servers
+
+`pi-lsp` adds diagnostics after edits and model tools for hover, definitions,
+references, and symbols. Both installers deploy `lsp.json` and install unpinned
+basedpyright, YAML, and JSON server packages under `~/.pi/agent/lsp-servers`.
+Node launches their entry points directly, avoiding Windows `.cmd` shims.
+The extra `lsp-server` argument supplies the script-name slot expected by their
+CLI parsers. YAML uses dynamic import because its entry point is ESM.
+
+Install Go and LLVM/clangd separately, then ensure `gopls` and `clangd` are on
+Pi's `PATH`:
+
+```bash
+go install golang.org/x/tools/gopls@latest
+```
+
+Go installs `gopls` in `GOBIN` or `$(go env GOPATH)/bin`; add that directory to
+`PATH`. Install clangd with your OS package manager (for example
+`sudo apt install clangd`, `brew install llvm`, or `scoop install llvm`).
+Ensure the LLVM `bin` directory is on `PATH` if your package manager does not add it.
+
+| Files | Server | Notes |
+| --- | --- | --- |
+| `.go` | gopls | Requires `go.mod` or `go.work` |
+| `.py`, `.pyi` | basedpyright | Requires Python/interpreter dependencies for accurate analysis |
+| C/C++ sources and headers | clangd | Generate `compile_commands.json` for accurate include paths and flags |
+| `.yaml`, `.yml` | yaml-language-server | Supports YAML schemas |
+| `.json`, `.jsonc` | vscode-json-language-server | JSON and JSON-with-comments |
+
+Except Go, servers use Pi's working directory as workspace root, including
+standalone files. Start Pi at the project root. For CMake projects, generate
+`compile_commands.json` with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`; if it lives
+under `build/`, expose it at the project root or configure clangd through `.clangd`.
+Headers ending in `.h` default to C; override the mapping in project `.pi/lsp.json`
+for C++-only projects. No automatic schema associations or custom compiler flags
+are imposed.
+
+For an existing Pi setup, **do not rerun the conflict-rejecting installer**.
+With Pi closed, back up any existing `~/.pi/agent/lsp.json`, copy
+`pi/.pi/agent/lsp.json` there, then run:
+
+```bash
+pi install npm:pi-lsp
+npm install --prefix "$HOME/.pi/agent/lsp-servers" --no-save --package-lock=false --ignore-scripts basedpyright yaml-language-server vscode-langservers-extracted
+```
+
+The same commands work in PowerShell; also set `PI_AGENT_DIR` as shown in the
+Windows section, including for manual/existing installations. Restart Pi after adding servers or changing
+`PATH`. Ask Pi to inspect a definition or hover to verify server startup;
+`lsp_diagnostics` alone only reads cached diagnostics. Project `.pi/lsp.json`
+overrides matching server IDs and requires trust. Global config can launch
+programs without a project trust prompt; review changes before deploying.
+
+If server installation fails, rerun the `npm install` command above; deployed
+configs remain. Native Go/LLVM dependencies and language environments are not
+installed or upgraded by these scripts.
+
 ## Updating the snapshot
 
 Edit tracked files directly, or manually copy reviewed, sanitized config back
 from Windows. Keep `settings.json` limited to portable preferences and plugin
 sources; do not copy device IDs, changelog history, API keys, or auth files.
-The Stow package ignores all agent files except the four listed above, but Git
+The Stow package ignores all agent files except the five listed above, but Git
 ignore rules do not detect secrets pasted into tracked files.
 
 Plugin sources live only in `settings.json`; update the inventory table when

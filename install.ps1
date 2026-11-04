@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 
-foreach ($command in @('pi', 'npx')) {
+foreach ($command in @('pi', 'npm', 'npx')) {
     if (-not (Get-Command $command -ErrorAction SilentlyContinue)) {
         throw "Required command missing: $command"
     }
@@ -11,6 +11,14 @@ if ($env:PI_CODING_AGENT_DIR) {
 
 $source = Join-Path $PSScriptRoot 'pi/.pi/agent'
 $target = Join-Path $HOME '.pi/agent'
+# pi-lsp 0.1.7 does not fall back to USERPROFILE on Windows.
+$lspAgentDir = $env:PI_AGENT_DIR
+if (-not $lspAgentDir -and $env:HOME) {
+    $lspAgentDir = Join-Path $env:HOME '.pi/agent'
+}
+if (-not $lspAgentDir -or [System.IO.Path]::GetFullPath($lspAgentDir) -ne [System.IO.Path]::GetFullPath($target)) {
+    throw 'pi-lsp requires PI_AGENT_DIR pointing to ~/.pi/agent (or HOME matching your profile). See README.md Windows setup; restart your terminal afterward.'
+}
 $files = @(Get-ChildItem -LiteralPath $source -File)
 
 # Check every destination before copying anything.
@@ -38,9 +46,17 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "Plugin installation failed (exit $LASTEXITCODE). Configs remain installed; retry: pi update --extensions"
     }
+    & npm install --prefix (Join-Path $target 'lsp-servers') --no-save --package-lock=false --ignore-scripts basedpyright yaml-language-server vscode-langservers-extracted
+    if ($LASTEXITCODE -ne 0) {
+        throw "LSP server installation failed (exit $LASTEXITCODE). Configs remain installed; see README.md for retry command."
+    }
     & npx --yes skills add mattpocock/skills --global --agent pi --skill '*' --yes
     if ($LASTEXITCODE -ne 0) {
         throw "Skill installation failed (exit $LASTEXITCODE). Retry: npx --yes skills add mattpocock/skills --global --agent pi --skill '*' --yes"
+    }
+    & npx --yes skills add evgenyigumnov/subtask4llm --global --agent pi --skill '*' --yes
+    if ($LASTEXITCODE -ne 0) {
+        throw "Subtask4LLM skill installation failed (exit $LASTEXITCODE). Retry: npx --yes skills add evgenyigumnov/subtask4llm --global --agent pi --skill '*' --yes"
     }
 } finally {
     Pop-Location

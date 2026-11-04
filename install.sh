@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-for command in pi stow npx; do
+for command in pi stow npm npx; do
     command -v "$command" >/dev/null || { printf 'Required command missing: %s\n' "$command" >&2; exit 1; }
 done
 if [[ -n "${PI_CODING_AGENT_DIR:-}" ]]; then
@@ -18,6 +18,8 @@ stow --no-folding --dir="$root" --target="$HOME" pi
 (
     cd -- "$HOME"
     pi update --extensions
+    npm install --prefix "$HOME/.pi/agent/lsp-servers" --no-save --package-lock=false --ignore-scripts basedpyright yaml-language-server vscode-langservers-extracted
     npx --yes skills add mattpocock/skills --global --agent pi --skill '*' --yes
+    npx --yes skills add evgenyigumnov/subtask4llm --global --agent pi --skill '*' --yes
 )
 printf 'Installed. Run pi, then /login. Memory embeddings need OPENROUTER_API_KEY.\n'

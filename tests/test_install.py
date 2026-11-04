@@ -23,6 +23,9 @@ class InstallTests(unittest.TestCase):
         pi = bin_dir / 'pi'
         pi.write_text('#!/bin/sh\nprintf "%s\\n" "$*" >> "$HOME/pi-calls"\nexit "${FAKE_PI_EXIT:-0}"\n')
         pi.chmod(0o755)
+        npm = bin_dir / 'npm'
+        npm.write_text('#!/bin/sh\nprintf "%s\\n" "$@" >> "$HOME/lsp-args"\nexit "${FAKE_NPM_EXIT:-0}"\n')
+        npm.chmod(0o755)
         npx = bin_dir / 'npx'
         npx.write_text('#!/bin/sh\nprintf "%s\\n" "$@" >> "$HOME/skills-args"\nexit "${FAKE_NPX_EXIT:-0}"\n')
         npx.chmod(0o755)
@@ -43,8 +46,16 @@ class InstallTests(unittest.TestCase):
             self.assertTrue((agent / source.name).is_symlink())
             self.assertEqual((agent / source.name).resolve(), source.resolve())
         self.assertEqual((self.home / 'pi-calls').read_text(), 'update --extensions\n')
+        self.assertEqual((self.home / 'lsp-args').read_text().splitlines(), [
+            'install', '--prefix', str(agent / 'lsp-servers'), '--no-save',
+            '--package-lock=false', '--ignore-scripts', 'basedpyright',
+            'yaml-language-server', 'vscode-langservers-extracted',
+        ])
+        self.assertTrue((agent / 'lsp.json').is_symlink())
         self.assertEqual((self.home / 'skills-args').read_text().splitlines(), [
             '--yes', 'skills', 'add', 'mattpocock/skills', '--global',
+            '--agent', 'pi', '--skill', '*', '--yes',
+            '--yes', 'skills', 'add', 'evgenyigumnov/subtask4llm', '--global',
             '--agent', 'pi', '--skill', '*', '--yes',
         ])
         (agent / 'runtime-check').write_text('local')
@@ -67,6 +78,13 @@ class InstallTests(unittest.TestCase):
         result = self.install()
         self.assertEqual(result.returncode, 7)
         self.assertTrue((self.home / '.pi/agent/settings.json').is_symlink())
+        self.assertFalse((self.home / 'skills-args').exists())
+
+    def test_lsp_failure_is_reported_and_configs_remain(self):
+        self.env['FAKE_NPM_EXIT'] = '9'
+        result = self.install()
+        self.assertEqual(result.returncode, 9)
+        self.assertTrue((self.home / '.pi/agent/lsp.json').is_symlink())
         self.assertFalse((self.home / 'skills-args').exists())
 
     def test_skill_failure_is_reported_and_configs_remain(self):

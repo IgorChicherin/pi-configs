@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "servers": [
+    {
+      "id": "gopls",
+      "include": ["**/*.go"],
+      "rootMarkers": ["go.work", "go.mod"],
+      "bin": "gopls",
+      "args": [],
+      "languageIdByExtension": {".go": "go"},
+      "startupTimeoutMs": 45000,
+      "diagnosticsWaitMs": 2000
+    },
+    {
+      "id": "basedpyright",
+      "include": ["**/*.py", "**/*.pyi"],
+      "bin": "node",
+      "args": [
+        "-e",
+        "require(require('node:os').homedir() + '/.pi/agent/lsp-servers/node_modules/basedpyright/langserver.index.js')",
+        "--",
+        "lsp-server",
+        "--stdio"
+      ],
+      "languageIdByExtension": {".py": "python", ".pyi": "python"},
+      "startupTimeoutMs": 45000,
+      "diagnosticsWaitMs": 2000
+    },
+    {
+      "id": "clangd",
+      "include": ["**/*.c", "**/*.h", "**/*.cc", "**/*.cpp", "**/*.cxx", "**/*.hh", "**/*.hpp", "**/*.hxx"],
+      "bin": "clangd",
+      "args": ["--background-index"],
+      "languageIdByExtension": {
+        ".c": "c",
+        ".h": "c",
+        ".cc": "cpp",
+        ".cpp": "cpp",
+        ".cxx": "cpp",
+        ".hh": "cpp",
+        ".hpp": "cpp",
+        ".hxx": "cpp"
+      },
+      "startupTimeoutMs": 45000,
+      "diagnosticsWaitMs": 2000
+    },
+    {
+      "id": "yaml",
+      "include": ["**/*.yaml", "**/*.yml"],
+      "bin": "node",
+      "args": [
+        "-e",
+        "import(require('node:url').pathToFileURL(require('node:os').homedir() + '/.pi/agent/lsp-servers/node_modules/yaml-language-server/bin/yaml-language-server').href)",
+        "--",
+        "lsp-server",
+        "--stdio"
+      ],
+      "languageIdByExtension": {".yaml": "yaml", ".yml": "yaml"},
+      "startupTimeoutMs": 45000,
+      "diagnosticsWaitMs": 2000
+    },
+    {
+      "id": "json",
+      "include": ["**/*.json", "**/*.jsonc"],
+      "bin": "node",
+      "args": [
+        "-e",
+        "require(require('node:os').homedir() + '/.pi/agent/lsp-servers/node_modules/vscode-langservers-extracted/bin/vscode-json-language-server')",
+        "--",
+        "lsp-server",
+        "--stdio"
+      ],
+      "languageIdByExtension": {".json": "json", ".jsonc": "jsonc"},
+      "startupTimeoutMs": 45000,
+      "diagnosticsWaitMs": 2000
+    }
+  ]
+}

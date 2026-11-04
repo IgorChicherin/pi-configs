@@ -3,7 +3,7 @@
     "embedding": {
       "adapter": "openai-compatible",
       "config": {
-        "model": "liquid/lfm-2.5-embedding-350m:free",
+        "model": "perplexity/pplx-embed-v1-0.6b",
         "baseUrl": "https://openrouter.ai/api/v1",
         "apiKeyEnv": "OPENROUTER_API_KEY"
       }
