@@ -1,4 +1,14 @@
 {
+  "defaultModel": "gpt-6-luna",
+  "defaultProvider": "openai",
+  "enabledModels": [
+    "openai/gpt-6-luna",
+    "openai/gpt-6-sol",
+    "openai/gpt-6-astra",
+    "ollama/pierreprudh/gemma4-12b-mtp:latest",
+    "ollama/mannix/Bonsai-2-27B:mtp-ptq1_0",
+    "ollama/hf.co/unsloth/Qwen3.5-9B-MTP-GGUF:Q4_K_M"
+  ],
   "packages": [
     "npm:pi-lsp",
     "npm:billion-context",
@@ -7,5 +17,6 @@
     "npm:@ollama/pi-web-search",
     "git:github.com/DietrichGebert/ponytail",
     "git:github.com/v2nic/pi-caveman"
-  ]
+  ],
+  "hideThinkingBlock": true
 }
