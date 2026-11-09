@@ -46,7 +46,7 @@ try {
     Set-TestHome $testHome
     & $installer
     $agent = Join-Path $HOME '.pi/agent'
-    Assert (@(Get-ChildItem -LiteralPath $agent -File).Count -eq 5) 'Expected five copied config files'
+    Assert (@(Get-ChildItem -LiteralPath $agent -File).Count -eq 6) 'Expected six copied config files'
     Assert (Test-Path (Join-Path $agent 'lsp.json')) 'Expected LSP configuration'
     Assert ($global:FakeNpmCalls.Count -eq 1) 'Expected one LSP server install'
     Assert ($global:FakeNpmCalls[0] -eq "install --prefix $(Join-Path $agent 'lsp-servers') --no-save --package-lock=false --ignore-scripts basedpyright yaml-language-server vscode-langservers-extracted") 'Unexpected LSP server command'

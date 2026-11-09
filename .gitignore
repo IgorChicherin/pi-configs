@@ -5,6 +5,7 @@
 !/pi/.pi/agent/mcp.json
 !/pi/.pi/agent/active-memory.json
 !/pi/.pi/agent/lsp.json
+!/pi/.pi/agent/models.json
 
 # Credentials and local artifacts, wherever they appear.
 **/auth.json

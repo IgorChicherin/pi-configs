@@ -10,6 +10,7 @@ Matt Pocock skills separately; their contents are not stored in this repository.
 ```text
 pi/.pi/agent/
   settings.json        # Unpinned plugin sources; no device/changelog state
+  models.json          # Ollama models and context metadata
   APPEND_SYSTEM.md     # Caveman Ultra instruction
   mcp.json             # Context7 MCP endpoint
   active-memory.json   # OpenRouter embedding provider; environment variable only
@@ -31,6 +32,7 @@ Installers reconcile the unpinned `packages` list in `settings.json` using
 | LSP | `npm:pi-lsp` | `0.1.7` |
 | Ponytail | `git:github.com/DietrichGebert/ponytail` | `96608e078b2d5ea607c5c3b8b5a54d1c1fba6846` |
 | Active memory | `npm:pi-active-memory` | `1.9.0` |
+| Ollama native provider | `npm:pi-ollama` | Unpinned; added to restore configuration |
 | Caveman | `git:github.com/v2nic/pi-caveman` | `2480692ffabddc3d1efec8eb822e664ff7e0e5ef` |
 
 Package-bundled skills are installed with their plugins. Review third-party
@@ -110,7 +112,7 @@ From this repository in the new PowerShell terminal:
 .\install.ps1
 ```
 
-The script checks LSP config discovery and all five destination files before copying them to
+The script checks LSP config discovery and all six destination files before copying them to
 `$HOME\.pi\agent`, then installs the plugins and external skills. No administrator access or Stow is
 needed. If local execution policy blocks the script, review it first, then run:
 
@@ -129,14 +131,15 @@ retry plugin installation alone, run `pi update --extensions`.
 ## After restoring
 
 1. Start `pi` and use `/login` to authenticate separately.
-2. For memory embeddings, set `OPENROUTER_API_KEY` outside this repository. The
+2. For Ollama, the restored `models.json` lists your models; `pi-ollama` uses Ollama's native API. Run `/ollama-context` in Pi to set its context length; this setting is persisted by the plugin. Configure `OLLAMA_HOST` if your xOllama server is not at the default `http://localhost:11434`.
+3. For memory embeddings, set `OPENROUTER_API_KEY` outside this repository. The
    configured model is `perplexity/pplx-embed-v1-0.6b`; this is a paid OpenRouter
    embedding model and requires account credit. Memory contents are not restored.
    Existing installations switching models must approve re-embedding at Pi startup;
    declining or a failed migration disables Active Memory for that session.
-3. Configure web-search provider credentials separately if required by your
+4. Configure web-search provider credentials separately if required by your
    chosen provider. Context7 uses its public MCP URL; no token is included.
-4. Use `pi list` to inspect configured plugins.
+5. Use `pi list` to inspect configured plugins.
 
 If plugin installation fails, deployed configs remain in place. Fix the network
 or prerequisite issue, then run `pi update --extensions` from your home directory.
@@ -206,7 +209,7 @@ installed or upgraded by these scripts.
 Edit tracked files directly, or manually copy reviewed, sanitized config back
 from Windows. Keep `settings.json` limited to portable preferences and plugin
 sources; do not copy device IDs, changelog history, API keys, or auth files.
-The Stow package ignores all agent files except the five listed above, but Git
+The Stow package ignores all agent files except the six listed above, but Git
 ignore rules do not detect secrets pasted into tracked files.
 
 Plugin sources live only in `settings.json`; update the inventory table when

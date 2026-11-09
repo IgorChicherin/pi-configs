@@ -1,0 +1,47 @@
+{
+  "providers": {
+    "ollama": {
+      "api": "openai-completions",
+      "apiKey": "ollama",
+      "baseUrl": "http://127.0.0.1:11434/v1",
+      "models": [
+        {
+          "contextWindow": 32000,
+          "id": "pierreprudh/gemma4-12b-mtp:latest",
+          "input": [
+            "text"
+          ],
+          "reasoning": true
+        },
+        {
+          "contextWindow": 60000,
+          "id": "mannix/Bonsai-2-27B:mtp-ptq1_0",
+          "input": [
+            "text"
+          ],
+          "reasoning": true
+        },
+        {
+          "_launch": true,
+          "contextWindow": 262144,
+          "id": "hf.co/unsloth/Qwen3.5-9B-MTP-GGUF:Q4_K_M",
+          "input": [
+            "text",
+            "image"
+          ],
+          "reasoning": true
+        },
+        {
+          "_launch": true,
+          "contextWindow": 262144,
+          "id": "gemma4:31b-cloud",
+          "input": [
+            "text",
+            "image"
+          ],
+          "reasoning": true
+        }
+      ]
+    }
+  }
+}

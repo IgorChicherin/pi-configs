@@ -3,6 +3,7 @@
     "npm:pi-lsp",
     "npm:billion-context",
     "npm:pi-active-memory",
+    "npm:pi-ollama",
     "npm:@ollama/pi-web-search",
     "git:github.com/DietrichGebert/ponytail",
     "git:github.com/v2nic/pi-caveman"
