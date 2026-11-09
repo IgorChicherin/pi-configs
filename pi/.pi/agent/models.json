@@ -23,7 +23,7 @@
         },
         {
           "_launch": true,
-          "contextWindow": 262144,
+          "contextWindow": 131072,
           "id": "hf.co/unsloth/Qwen3.5-9B-MTP-GGUF:Q4_K_M",
           "input": [
             "text",
