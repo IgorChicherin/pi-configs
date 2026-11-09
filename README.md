@@ -133,7 +133,7 @@ retry plugin installation alone, run `pi update --extensions`.
 1. Start `pi` and use `/login` to authenticate separately.
 2. For Ollama, the restored `models.json` lists your models; `pi-ollama` uses Ollama's native API. Run `/ollama-context` in Pi to set its context length; this setting is persisted by the plugin. Configure `OLLAMA_HOST` if your xOllama server is not at the default `http://localhost:11434`.
 3. For memory embeddings, set `OPENROUTER_API_KEY` outside this repository. The
-   configured model is `perplexity/pplx-embed-v1-0.6b`; this is a paid OpenRouter
+   configured model is `perplexity/pplx-embed-v1-0.6b` on OpenRouter; this is a paid
    embedding model and requires account credit. Memory contents are not restored.
    Existing installations switching models must approve re-embedding at Pi startup;
    declining or a failed migration disables Active Memory for that session.
